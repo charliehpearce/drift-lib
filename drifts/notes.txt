@@ -1,0 +1,3 @@
+Maybe this could be generalised so different drift types
+could be sandwiched together, market shocks could be easily 
+simulated using this framwork.
