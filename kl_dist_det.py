@@ -7,23 +7,8 @@ import seaborn as sns
 For each window, run a monte carlo simulation under assumptions of mu and sigma
 Can test if second window is 95% outside of distrbution.
 """
-# Use KL distance (relative entropy) to measure similarity between windows
-class BaseDrift:
-    def __init__(self) -> None:
-        pass
 
-    def add_element(self):
-        pass
-
-    def drift_alarm(self):
-        # Drift alarm
-        pass
-
-    def drift_detected(self):
-        # Drift detection
-        pass
-
-class KLAdwin(BaseDrift):
+class KLAdwin:
     """
     Sliding window. When drift has been detected, data from the previous
     window is removed.
@@ -39,12 +24,10 @@ class KLAdwin(BaseDrift):
     Monte carlo simulation under 
     """
     def __init__(self, 
-        alpha = 0.05, 
-        window_size = 0.002, 
-        n_bootstrap = 10000, 
-        max_window_size = 500,
-        min_window_size = 50,
+        alpha = 0.05,
+        n_bootstrap = 1000, 
         n_bins = 10,
+        max_window_size = 500,
         min_subwindow_size = 20,) -> None:
         """
         Parameters
@@ -57,15 +40,16 @@ class KLAdwin(BaseDrift):
         """
         self.alpha = alpha
         self.n_bootstrap = n_bootstrap
-        self.n_bins = n_bins
-        self.delta = window_size    
-        self.max_window_size = max_window_size 
-        self.min_window_size = min_window_size   
+        self.n_bins = n_bins  
+        self.max_window_size = max_window_size
         self.min_subwindow_size = min_subwindow_size    
         
         self.window_size = 0
         self.t_index = 0
         self.window = []
+        self.drift_alarm = False
+        self.drift_detected = False
+        self.persistence_factor = 5
 
     @staticmethod
     def generate_pdists(n_bins, dist0:list, dist1:list):
@@ -77,8 +61,8 @@ class KLAdwin(BaseDrift):
         for KL distance calculations : list(s)
         """
         def generate_dist(n_bins, bin_width, dist, min_val):
-            # For every data point, add to bin
-            binned = np.zeros(n_bins)+0.0000001
+            # For every data point, to avoid div0 add 0.000000001
+            binned = np.zeros(n_bins)+0.00000000001
             for i in dist:
                 r = i%bin_width
                 bin_index = int((i-r-min_val)/bin_width)-1
@@ -102,12 +86,19 @@ class KLAdwin(BaseDrift):
         return p_dist0,p_dist1
 
     @staticmethod
+    # Kullback-Leibler Divergence 
     def calculate_kl_distance(d1,d2):
         return np.sum(np.multiply(d1, np.log(d1/d2)))
         
     def get_bootstrap_intervals(self, dist0, dist1):
         # Loop for no bootstrap intervals
         kl_distances = np.zeros(self.n_bootstrap)
+        
+        # Calculate KL distnace from samples
+        p_dist0_sample, p_dist1_sample = self.generate_pdists(n_bins=self.n_bins, dist0=dist0 , dist1=dist1) 
+        kl_sample = self.calculate_kl_distance(p_dist0_sample,p_dist1_sample)
+        
+        # Calculate bootstrap intervals
         for i in range(self.n_bootstrap):
             # Generate bootstrapped data from dists
             k = 2*len(dist0)
@@ -120,19 +111,62 @@ class KLAdwin(BaseDrift):
         
         sns.histplot(kl_distances)
         # Calculate intervals
-        lower_interval = np.quantile(kl_distances, q=self.alpha)
-        upper_interval = np.quantile(kl_distances, q=(1-self.alpha))
-        return lower_interval, upper_interval
-    
-    def apply(self):
-        pass
-        # Calcualte number of splits
+        lower_interval = np.quantile(kl_distances, q=(self.alpha/2))
+        upper_interval = np.quantile(kl_distances, q=(1-(self.alpha)/2))
+        mean = np.mean(kl_distances)
+        median = np.median(kl_distances)
+        
+        return {'kl_sample':kl_sample, 'mean':mean, 'median':median,\
+             'lower_interval': lower_interval, 'upper_interval': upper_interval}
 
-        # loop over every split in the window
+    def add_element(self, point:float):
+        self.window.append(point)
 
-        # check if there's a change in the distrubtion
+        # Remove 0th element if bigger than window size
+        if len(self.window) > self.max_window_size:
+            self.window.pop(0)
 
-        # if there is a change, shrink window size to point of drift
+        self.t_index += 1
+
+        # Call adwin, should this be done every nth elements to reduce 
+        # computational cost?
+        if len(self.window) > 2 * self.min_subwindow_size:
+            self.adwin()
+
+    def drift_alarm(self):
+        return self.drift_alarm
+
+    def drift_detected(self):
+        return self.drift_detected
+
+    # Adwin stuff
+    def adwin(self):
+        # Every time an element is added, loop over windows.
+
+        # Calculate number of subwindows
+        no_iters = len(self.window) - 2*self.min_subwindow_size
+        persist_count = 0
+
+        for i in range(no_iters):
+            # Split into two dists
+            dist0 = self.window[:self.min_subwindow_size + i]
+            dist1 = self.window[self.min_subwindow_size + i:]
+
+            result = self.get_bootstrap_intervals(dist0,dist1)
+
+            # Alarm drift if above KL threshold
+            if result['kl_sample'] >= 0.4:
+                persist_count += 1
+                self.drift_alarm = True
+            else:
+                persist_count = 0
+
+            # If drift detected for more than n persistance factors
+            # trigger detected and set the window equal to the 2nd dist
+            if persist_count >= self.persistence_factor:
+                self.drift_detected = True
+                self.window = dist1
+                break
         
 
 if __name__ == "__main__":
