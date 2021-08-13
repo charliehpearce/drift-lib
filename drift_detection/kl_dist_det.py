@@ -6,6 +6,12 @@ import seaborn as sns
 """
 For each window, run a monte carlo simulation under assumptions of mu and sigma
 Can test if second window is 95% outside of distrbution.
+
+To do:
+Implement drift cache
+Implement shennon jenson 
+Test
+
 """
 
 class KLAdwin:
@@ -27,8 +33,7 @@ class KLAdwin:
         alpha = 0.05,
         n_bootstrap = 1000, 
         n_bins = 10,
-        max_window_size = 500,
-        min_subwindow_size = 20,) -> None:
+        max_window_size = 500) -> None:
         """
         Parameters
         Alpha: Alpha for generating confidence intervals
@@ -42,14 +47,21 @@ class KLAdwin:
         self.n_bootstrap = n_bootstrap
         self.n_bins = n_bins  
         self.max_window_size = max_window_size
-        self.min_subwindow_size = min_subwindow_size    
         
-        self.window_size = 0
         self.t_index = 0
         self.window = []
-        self.drift_alarm = False
-        self.drift_detected = False
+        self.window_cache = []
+        
+        self._drift_alarm = False
+        self._drift_detected = False
+        self.adwin_quantiles = 5
         self.persistence_factor = 5
+
+        # Set to false to break ADWIN loop
+        self.keep_running = True
+        
+        # Begin loop
+        self.adwin()
 
     @staticmethod
     def generate_pdists(n_bins, dist0:list, dist1:list):
@@ -109,7 +121,6 @@ class KLAdwin:
             # Calculate KL distance and append to list
             kl_distances[i] = self.calculate_kl_distance(np.array(p_dist0), np.array(p_dist1))
         
-        sns.histplot(kl_distances)
         # Calculate intervals
         lower_interval = np.quantile(kl_distances, q=(self.alpha/2))
         upper_interval = np.quantile(kl_distances, q=(1-(self.alpha)/2))
@@ -120,56 +131,63 @@ class KLAdwin:
              'lower_interval': lower_interval, 'upper_interval': upper_interval}
 
     def add_element(self, point:float):
-        self.window.append(point)
-
-        # Remove 0th element if bigger than window size
-        if len(self.window) > self.max_window_size:
-            self.window.pop(0)
-
+        self.window_cache.append(point)
         self.t_index += 1
 
-        # Call adwin, should this be done every nth elements to reduce 
-        # computational cost?
-        if len(self.window) > 2 * self.min_subwindow_size:
-            self.adwin()
-
+    @property
     def drift_alarm(self):
-        return self.drift_alarm
+        return self._drift_alarm
 
+    @property
     def drift_detected(self):
-        return self.drift_detected
+        return self._drift_detected
 
     # Adwin stuff
     def adwin(self):
         # Every time an element is added, loop over windows.
+        while self.keep_running:
+            
+            if len(self.window_cache > 0) and self.window_cache < self.max_window_size:
+                # Add cache to window and clear
+                self.window += self.window_cache
+                self.cache = []
 
-        # Calculate number of subwindows
-        no_iters = len(self.window) - 2*self.min_subwindow_size
-        persist_count = 0
+                # Remove elements outside of max window size
+                if len(self.window) > self.max_window_size:
+                    r = len(self.window)-self.max_window_size
+                    self.window = self.window[r:]
+                    assert len(self.window) == self.max_window_size
+                
+                # Generate subwindow indx
+                window_len = len(self.window)
+                indxs = [(1/k)*window_len for k in reversed(range(1, self.adwin_quantiles-1))]
+                #check this
 
-        for i in range(no_iters):
-            # Split into two dists
-            dist0 = self.window[:self.min_subwindow_size + i]
-            dist1 = self.window[self.min_subwindow_size + i:]
-
-            result = self.get_bootstrap_intervals(dist0,dist1)
-
-            # Alarm drift if above KL threshold
-            if result['kl_sample'] >= 0.4:
-                persist_count += 1
-                self.drift_alarm = True
-            else:
                 persist_count = 0
+                for i in indxs:
+                    # Split into two dists
+                    dist0 = self.window[:i]
+                    dist1 = self.window[i:]
 
-            # If drift detected for more than n persistance factors
-            # trigger detected and set the window equal to the 2nd dist
-            if persist_count >= self.persistence_factor:
-                self.drift_detected = True
-                self.window = dist1
-                break
+                    result = self.get_bootstrap_intervals(dist0,dist1)
+
+                    # Alarm drift if above KL threshold
+                    if result['kl_sample'] >= 0.2:
+                        persist_count += 1
+                        self._drift_alarm = True
+                    else:
+                        persist_count = 0
+
+                    # If drift detected for more than n persistance factors
+                    # trigger detected and set the window equal to the 2nd dist
+                    if persist_count >= self.persistence_factor:
+                        self._drift_detected = True
+                        self.window = dist1
+                        break
         
 
 if __name__ == "__main__":
+    # Example usage
     pass
 
 """
