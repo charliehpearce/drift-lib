@@ -1,5 +1,11 @@
 """
 https://ieeexplore.ieee.org/document/1380068
+
+https://link.springer.com/chapter/10.1007/978-3-642-24553-4_92 (PSO)
+PSO for estimating intial weights
+
+Useful article on PSO
+https://towardsdatascience.com/particle-swarm-optimization-visually-explained-46289eeb2e14
 """
 import numpy as np
 

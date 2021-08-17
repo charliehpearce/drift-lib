@@ -8,22 +8,17 @@ For each window, run a monte carlo simulation under assumptions of mu and sigma
 Can test if second window is 95% outside of distrbution.
 
 To do:
-Implement drift cache
-Implement shennon jenson 
-Test
-
+[X] Implement drift cache
+[ ] Implement shennon jenson 
+[ ] Test
 """
-
 class KLAdwin:
     """
-    Sliding window. When drift has been detected, data from the previous
-    window is removed.
-
     Ideas/notes:
     Can use the window for a new ml algo.
-    Bootstrap data from windows?
-    Confidence level alpha from KL distance - VIA BOOTSTRAP
     If KL distance is increasing between windows at a parametric rate then gradual drift may be occuring
+
+    Set n_bootstrap to 1 if 
     
     Need to bin data somehow so bins are comparible NO
     https://www.youtube.com/watch?v=Kho4VuKmQdE
