@@ -37,7 +37,6 @@ class PSO:
         # check to see if there has been a change
         elipson = 0.00001 # eliminate noise
         
-
         # set vels to new vels
         self._velocities = new_vels
         self.particles += new_vels
@@ -63,9 +62,10 @@ class PSO:
         t_f_diff = self._p_best_values > fitness_scores
         # get idx of true false
         true_idxs = np.nonzero(t_f_diff)[0]
-        print(true_idxs)
         # Set new best vals
         self._p_bests[true_idxs] = self.particles[true_idxs]
+
+        print(f'Epoch number: {self._epoch} \nGlobal Best fitness: {self._g_best_val} Epoch best fitness:{fitness_scores[g_best_idx]} with std {np.std(fitness_scores)}')
 
     def _update_coeffs(self):
         """
@@ -104,7 +104,6 @@ class PSO:
 
         ## main loop 
         while (self.max_epoch > self._epoch) and not self._solution_found:
-            print(f'Epoch number {self._epoch}')
             self.update_particles()
             self.update_best()
             self._update_coeffs
