@@ -34,9 +34,9 @@ class IPSOELM(PSO):
         self.Y_val = y_vl
 
         n_hidden_layers = 1000
-        n_particles = 30
+        n_particles = 20
         
-        particles = np.random.uniform(0,1,size=(n_particles, X_train.shape[1]+1, n_hidden_layers))
+        particles = np.random.uniform(-1,1,size=(n_particles, X_train.shape[1]+1, n_hidden_layers))
         # generate particles
         # each particle needs to be n long m and n 
         # call optimise on particles
@@ -49,12 +49,12 @@ class IPSOELM(PSO):
     """
 
 if __name__ == "__main__":
-    from sklearn.datasets import load_boston
+    from sklearn.datasets import load_boston as data
     from sklearn.model_selection import train_test_split
     from sklearn.preprocessing import MinMaxScaler
 
     scaler = MinMaxScaler()
-    X, y = load_boston(return_X_y = True)
+    X, y = data(return_X_y = True)
     X_scaled = scaler.fit_transform(X)
     X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.33, random_state=123)
 
@@ -67,4 +67,3 @@ if __name__ == "__main__":
     For the optimisation, each particle is a m*n matrix, last row is weights
     So, the rand component needs to be a matrix of dim the same as 
     """
-    

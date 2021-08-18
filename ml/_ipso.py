@@ -10,7 +10,7 @@ import numpy as np
 # stopping criteria, if avg fitness is not better than rest
 
 class PSO:
-    def __init__(self, max_epoch, c1=2.05, c2=2, w=0.73) -> None:
+    def __init__(self, max_epoch, c1=1, c2=1.5, w=0.7) -> None:
         self.max_epoch = max_epoch
         self._epoch = 0
         self._c1 = c1
@@ -35,6 +35,8 @@ class PSO:
         new_vels = inertia + cog + glob
 
         # check to see if there has been a change
+        elipson = 0.00001 # eliminate noise
+        
 
         # set vels to new vels
         self._velocities = new_vels
@@ -42,6 +44,7 @@ class PSO:
 
     def update_best(self):
         """
+        Update global and personal bests after moving particles
         Note: This will need to be updated if maxima is needed
         instead of a minima
         """
@@ -60,10 +63,16 @@ class PSO:
         t_f_diff = self._p_best_values > fitness_scores
         # get idx of true false
         true_idxs = np.nonzero(t_f_diff)[0]
+        print(true_idxs)
         # Set new best vals
         self._p_bests[true_idxs] = self.particles[true_idxs]
 
     def _update_coeffs(self):
+        """
+        Reduces the personal component of the swarm towards
+        the end of the swarm, as well as increasing glob component
+        and reducing w.
+        """
         t = self._epoch/self.max_epoch
         self._c1 = (-3*t) + 3.5
         self._c2 = (3*t) + 0.5
@@ -71,30 +80,34 @@ class PSO:
 
     @abstractmethod
     def fitness_fn(self):
+        """
+        Fitness_fn should accept the particles and return an
+        array with the value to be optimised for e.g RMSE.
+        """
         raise NotImplementedError
 
     def optimize(self, particles):
         """
         Particles should be any size numpy mtrx
-        Fitness_fn should accept the particles and return an
-        array with the value to be optimised for e.g RMSE.
         """
         # Init variables from  particles
         self.particles = np.array(particles)
         self._velocities = np.random.rand(*particles.shape)
+        self._N = len(self.particles)
+        
         self._p_bests = self.particles
         self._p_best_values = np.array(self.fitness_fn(self.particles))
-        self._g_best_val = np.min(self._p_best_values)
-        self._g_best = self.particles[0]
-        self._N = len(self.particles)
+        g_best_idx = np.argmin(self._p_best_values)
+        self._g_best_val = self._p_best_values[g_best_idx]
+        self._g_best = self.particles[g_best_idx]
+        
 
         ## main loop 
         while (self.max_epoch > self._epoch) and not self._solution_found:
             print(f'Epoch number {self._epoch}')
             self.update_particles()
             self.update_best()
-            self._update_coeffs()
-            #self._update_coeffs
+            self._update_coeffs
             self._epoch += 1
 
         return self._g_best
