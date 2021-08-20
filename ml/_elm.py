@@ -18,8 +18,8 @@ class ELM():
         return H
    
     def _init_weights(self, X_size):
-        self._input_weights = np.random.normal(size=(X_size,self.hidden_layers))
-        self._biases = np.random.normal(size=(self.hidden_layers))
+        self._input_weights = np.random.uniform(-1,1,size=(X_size,self.hidden_layers))
+        self._biases = np.random.uniform(-1,1,size=(self.hidden_layers))
     
     def train(self, X, y, input_weights=None, biases=None):
        
@@ -41,15 +41,28 @@ if __name__ == "__main__":
     from sklearn.datasets import load_boston
     from sklearn.model_selection import train_test_split
     from sklearn.preprocessing import MinMaxScaler
+    from sklearn import svm
+    from sklearn.linear_model import LinearRegression
+    from sklearn.neural_network import MLPRegressor
+    from sklearn.metrics import mean_squared_error
+
+    #np.random.seed(1234)
 
     scaler = MinMaxScaler()
     X, y = load_boston(return_X_y = True)
     X_scaled = scaler.fit_transform(X)
-    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.33)
 
-    model = ELM(hidden_layers=5000)
-    model.train(X_train,y_train)
+    rmses=[]
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.30, random_state=1234)
+    
+    for i in range(100):
+        model = ELM()
+        model.train(X_train,y_train)
 
-    preds = model.predict(X_test)
-    rmse = np.sqrt((1/len(preds))*np.sum(preds-y_test)**2)
-    print(rmse)
+        preds = model.predict(X_test)
+        rmse = np.sqrt(mean_squared_error(y_test,preds))
+        rmses.append(rmse)
+        print(rmse)
+    
+    print(np.mean(rmses))
+    print(np.std(rmses))

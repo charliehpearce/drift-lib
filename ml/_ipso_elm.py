@@ -6,10 +6,11 @@ from _ipso import PSO
 from _elm import ELM
 
 class IPSOELM(PSO):
-    def __init__(self, max_epoch=10, n_hidden_layers=1000, n_particles = 30) -> None:
-        super().__init__(max_epoch=max_epoch)
+    def __init__(self, max_epoch=10, n_hidden_layers=5000, n_particles = 20) -> None:
+        super().__init__(max_epoch=max_epoch, verbose=True)
         self.n_hidden_layers = n_hidden_layers
         self.n_particles = n_particles
+        self.best_mdl = ELM()
 
     def fitness_fn(self, particles):
         rmse_particles = []
@@ -23,7 +24,8 @@ class IPSOELM(PSO):
             # Get predictions
             preds = mdl.predict(self.X_val)
             # Get RMSE and add to rmse_particles list
-            rmse = np.sqrt((1/len(preds))*np.sum(preds-self.Y_val)**2)
+            rmse = np.sqrt((1/len(preds))*np.sum((preds-self.Y_val)**2))
+
             rmse_particles.append(rmse)
         
         return rmse_particles
@@ -35,7 +37,7 @@ class IPSOELM(PSO):
         self.Y_val = y_vl
   
         # Range defines the initial search space
-        particles = np.random.uniform(-5,5,size=(self.n_particles, X_train.shape[1]+1, \
+        particles = np.random.uniform(-1,1,size=(self.n_particles, X_train.shape[1]+1, \
             self.n_hidden_layers))
 
         # call optimise on particles
@@ -46,8 +48,8 @@ class IPSOELM(PSO):
         biases = glob_best[-1:,:].flatten()
 
         # Train ELM using optimised parameters
-        self.best_mdl = ELM().train(X=(list(X_tr)+list(X_vl)),\
-            y=(list(y_tr)+list(y_vl)),input_weights=weights,biases=biases) 
+        self.best_mdl.train(X=(list(X_tr)),\
+            y=(list(y_tr)),input_weights=weights,biases=biases) 
     
     def predict(self, X):
         # Used to predict on weights once mdl trained
@@ -58,15 +60,26 @@ if __name__ == "__main__":
     from sklearn.datasets import load_boston as data
     from sklearn.model_selection import train_test_split
     from sklearn.preprocessing import MinMaxScaler
+    from tqdm import tqdm
+
+    #np.random.seed(1234)
 
     scaler = MinMaxScaler()
     X, y = data(return_X_y = True)
     X_scaled = scaler.fit_transform(X)
-    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.33, random_state=123)
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.30, random_state=1234)
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.30, random_state=1234)
 
-    model = IPSOELM()
-    model.train(X_train,y_train,X_test,y_test)
+    rmses = []
+    for i in range(100):
+        model = IPSOELM(max_epoch=20, n_particles=10)
+        model.train(X_train,y_train,X_val,y_val)
 
-    preds = model.predict(X_test)
-    rmse = np.sqrt((1/len(preds))*np.sum(preds-y_test)**2)
-    print(f'RMSE on test set {rmse}')
+        preds = model.predict(X_test)
+
+        rmse = np.sqrt((1/len(preds))*np.sum((preds-y_test)**2))
+        rmses.append(rmse)
+        print(f'trial {i} RMSE = {rmse}')
+    
+    print(np.mean(rmses))
+    print(np.std(rmses))
