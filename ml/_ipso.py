@@ -19,32 +19,7 @@ class PSO:
         self._w = w
         self._solution_found = False
         self._verbose = verbose
-    """
-    Some fuckery is breaking this
 
-        def update_particles(self):
-            # Inertia Component
-            inertia = self._w * self._velocities
-
-            # Personal Compoenent (cog)
-            r1 = np.random.rand(self.particles.shape[0]).reshape((self._N,1)) #
-            cog = np.multiply((self._c1 * r1),(self._p_bests - self.particles))
-            #print(self._p_bests - self.particles)
-
-            # Global Component
-            r2 = np.random.rand(*self.particles.shape) #*self.particles.shape
-            g_best_stack_dim = (self._N, *[1 for _ in range(len(self._g_best.shape))])
-            tiled_gbest = np.tile(self._g_best[None], g_best_stack_dim)
-
-            glob = (self._c2 * r2) * (tiled_gbest-self.particles)
-
-            new_vels = inertia + cog + glob
-
-            # check to see if there has been a change
-            # set vels to new vels
-            self._velocities = new_vels
-            self.particles += self.particles + new_vels
-    """
     def update_particles(self):
         # add inertia
         inertia = self._w * self._velocities
