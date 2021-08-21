@@ -6,6 +6,7 @@ class BaseDrift:
         self.drift_alarm = False
         self.drift_warning = False
         self.window = []
+        self.t_index = 0
     
     def drift_alarm(self):
         return self.drift_alarm
@@ -20,6 +21,7 @@ class BaseDrift:
     def add_element(self, p):
         self.window.append(p)
         self.apply()
+        self.t_index += 1
     
     def reset_alarms(self):
         self.drift_warning = False
