@@ -7,8 +7,8 @@ Set test_stat method to a function returning a p_val, test stat etc etc
 """
 
 class ADWIN(BaseDrift):
-    def __init__(self, minimum_window_size=200, minimum_subwindow_size=100,\
-         maximum_window_size = 3000, delta= 20, persistence_factor=2) -> None:
+    def __init__(self, minimum_window_size=300, minimum_subwindow_size=200,\
+         maximum_window_size = 1000, delta= 20, persistence_factor=3) -> None:
         
         super().__init__()
         self.minimum_window_size = minimum_window_size
