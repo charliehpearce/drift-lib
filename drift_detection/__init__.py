@@ -5,7 +5,7 @@ from ._ADWIN import ADWIN
 from ._KLAdWin import KLAdWin
 from ._KSAdWin import KSAdWin
 from ._DDM import DDM
+from ._DDM_Regressor import DDMRegressor
 
 
-
-__all__ = ['KLAdwin','ADWINTTest']
+__all__ = ['KLAdwin','ADWINTTest','KSAdWin','DDM','DDMRegressor']
