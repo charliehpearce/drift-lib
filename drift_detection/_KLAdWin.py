@@ -11,12 +11,10 @@ class KLAdWin(ADWIN):
         """
         super().__init__(delta=delta, minimum_window_size=300)
         self.n_bins = n_bins
-        self.kl = []
 
     def test_stat(self, window1, window2):
         pdf1, pdf2, x = self.create_pdf(window1,window2)
         kl = self.calc_kl_distance(pdf1,pdf2,x)
-        self.kl.append(kl)
         return kl
     
     @staticmethod
@@ -40,8 +38,8 @@ class KLAdWin(ADWIN):
         x_eval = np.linspace(min_val, max_val, self.n_bins)
 
         # Create Prob Density Fns
-        dist_1_pdf = dist_1_kde.pdf(x_eval)
-        dist_2_pdf = dist_2_kde.pdf(x_eval)
+        dist_1_pdf = dist_1_kde.evaluate(x_eval)
+        dist_2_pdf = dist_2_kde.evaluate(x_eval)
 
         return dist_1_pdf, dist_2_pdf, x_eval
 

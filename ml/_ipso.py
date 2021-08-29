@@ -8,7 +8,10 @@ from abc import abstractmethod
 import numpy as np
 from numpy.lib.shape_base import tile
 
-# stopping criteria, if avg fitness is not better than rest
+"""
+To Do:
+Refactor 
+"""
 
 class PSO:
     def __init__(self, max_epoch=100, c1=2, c2=1.5, w=0.7, verbose=False) -> None:
@@ -20,20 +23,18 @@ class PSO:
         self._solution_found = False
         self._verbose = verbose
 
-    def update_particles(self):
+    def _update_particles(self):
         # add inertia
         inertia = self._w * self._velocities
         # add cognitive component
-        #r_1 = np.random.random(self._N)
-        #r_1 = np.tile(r_1[:, None], (1, *self.particles.shape[1:]))
         r_1 = np.random.rand(*self.particles.shape)
         cog = self._c1 * r_1 * (self._p_bests - self.particles)
         
         # add social component
-        #r_2 = np.random.random(self._N)
-        #r_2 = np.tile(r_2[:, None], (1, *self.particles.shape[1:]))
         r_2 = np.random.rand(*self.particles.shape)
-        g_best_stack_dim = (self._N, *[1 for _ in range(len(self._g_best.shape))])
+        #(self._N, *[1 for _ in range(len(self._g_best.shape))]) OLD
+        g_best_stack_dim = (self._N, *[1]*len(self._g_best.shape))
+
         g_best = np.tile(self._g_best[None], g_best_stack_dim)
         glob = self._c2 * r_2 * (g_best  - self.particles)
 
@@ -43,7 +44,7 @@ class PSO:
         self.velocities = new_velocities
         self.particles = self.particles + new_velocities
 
-    def update_best(self):
+    def _update_best(self):
         """
         Update global and personal bests after moving particles
         Note: This will need to be updated if maxima is needed
@@ -105,8 +106,8 @@ class PSO:
         
         ## main loop 
         while (self.max_epoch > self._epoch) and not self._solution_found:
-            self.update_particles()
-            self.update_best()
+            self._update_particles()
+            self._update_best()
             self._update_coeffs()
             self._epoch += 1
         

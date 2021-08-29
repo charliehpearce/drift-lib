@@ -1,10 +1,10 @@
-from abc import abstractmethod
-from ._base_drift import BaseDrift
-
 """
-ADaptive WINdowing base class
+ADaptive WINdowing super class
 Set test_stat method to a function returning a p_val, test stat etc etc
 """
+
+from abc import abstractmethod
+from ._base_drift import BaseDrift
 
 class ADWIN(BaseDrift):
     def __init__(self, minimum_window_size=300, minimum_subwindow_size=200,\

@@ -21,7 +21,7 @@ class ELM():
         self._input_weights = np.random.uniform(-1,1,size=(X_size,self.hidden_layers))
         self._biases = np.random.uniform(-1,1,size=(self.hidden_layers))
     
-    def train(self, X, y, input_weights=None, biases=None):
+    def fit(self, X, y, input_weights=None, biases=None):
        
         if (input_weights is None) and (biases is None):
             self._init_weights(X.shape[1])
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     
     for i in range(100):
         model = ELM()
-        model.train(X_train,y_train)
+        model.fit(X_train,y_train)
 
         preds = model.predict(X_test)
         rmse = np.sqrt(mean_squared_error(y_test,preds))

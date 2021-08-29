@@ -6,4 +6,4 @@ class TTestAdWin(ADWIN):
         super().__init__()
 
     def test_stat(self, window1, window2):
-        return ttest_ind(window1,window2)[1]
+        return ttest_ind(window1,window2, equal_var=False)[1]

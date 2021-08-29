@@ -2,12 +2,12 @@
 https://ieeexplore.ieee.org/document/1380068
 """
 import numpy as np
-from _ipso import PSO
-from _elm import ELM
+from ._ipso import PSO
+from ._elm import ELM
 
 class IPSOELM(PSO):
-    def __init__(self, max_epoch=10, n_hidden_layers=5000, n_particles = 20) -> None:
-        super().__init__(max_epoch=max_epoch, verbose=True)
+    def __init__(self, max_epoch=50, n_hidden_layers=10, n_particles = 20) -> None:
+        super().__init__(max_epoch=max_epoch, verbose=False)
         self.n_hidden_layers = n_hidden_layers
         self.n_particles = n_particles
         self.best_mdl = ELM()
@@ -20,7 +20,7 @@ class IPSOELM(PSO):
             biases = p[-1:,:].flatten()
             # Train ELM on weights and biases
             mdl = ELM()
-            mdl.train(X=self.X_train,y=self.Y_train, input_weights=weights, biases=biases) 
+            mdl.fit(X=self.X_train,y=self.Y_train, input_weights=weights, biases=biases) 
             # Get predictions
             preds = mdl.predict(self.X_val)
             # Get RMSE and add to rmse_particles list
@@ -30,7 +30,7 @@ class IPSOELM(PSO):
         
         return rmse_particles
     
-    def train(self, X_tr, y_tr, X_vl, y_vl):
+    def fit(self, X_tr, y_tr, X_vl, y_vl):
         self.X_train = X_tr
         self.Y_train = y_tr
         self.X_val = X_vl
@@ -48,7 +48,7 @@ class IPSOELM(PSO):
         biases = glob_best[-1:,:].flatten()
 
         # Train ELM using optimised parameters
-        self.best_mdl.train(X=(list(X_tr)),\
+        self.best_mdl.fit(X=(list(X_tr)),\
             y=(list(y_tr)),input_weights=weights,biases=biases) 
     
     def predict(self, X):
@@ -71,15 +71,14 @@ if __name__ == "__main__":
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.30, random_state=1234)
 
     rmses = []
-    for i in range(100):
+    for i in range(50):
         model = IPSOELM(max_epoch=20, n_particles=10)
-        model.train(X_train,y_train,X_val,y_val)
+        model.fit(X_train,y_train,X_val,y_val)
 
         preds = model.predict(X_test)
 
         rmse = np.sqrt((1/len(preds))*np.sum((preds-y_test)**2))
         rmses.append(rmse)
         print(f'trial {i} RMSE = {rmse}')
-    
     print(np.mean(rmses))
     print(np.std(rmses))
