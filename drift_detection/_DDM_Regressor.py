@@ -1,6 +1,5 @@
 """
-Drift Detection Method
-Gama et al.
+DDM Wrapper for Regressors
 """
 from ._DDM import DDM
 import numpy as np

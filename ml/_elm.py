@@ -4,8 +4,8 @@ https://ieeexplore.ieee.org/document/1380068
 import numpy as np
 
 class ELM():
-    def __init__(self, hidden_layers = 5000) -> None:
-        self.hidden_layers = hidden_layers
+    def __init__(self, n_hidden_layers = 5000) -> None:
+        self.hidden_layers = n_hidden_layers
         
     @staticmethod
     def _relu(x):

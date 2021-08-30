@@ -13,7 +13,7 @@ class IPSOELM(PSO):
         self.best_mdl = ELM()
 
     def fitness_fn(self, particles):
-        rmse_particles = []
+        mse_particles = []
         for p in particles:
             # Get weights and biases from particle mtrx
             weights = p[:-1,:]
@@ -24,11 +24,11 @@ class IPSOELM(PSO):
             # Get predictions
             preds = mdl.predict(self.X_val)
             # Get RMSE and add to rmse_particles list
-            rmse = np.sqrt((1/len(preds))*np.sum((preds-self.Y_val)**2))
+            mse = (1/len(preds))*np.sum((preds-self.Y_val)**2)
 
-            rmse_particles.append(rmse)
+            mse_particles.append(mse)
         
-        return rmse_particles
+        return mse_particles
     
     def fit(self, X_tr, y_tr, X_vl, y_vl):
         self.X_train = X_tr
@@ -70,15 +70,15 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.30, random_state=1234)
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.30, random_state=1234)
 
-    rmses = []
+    mses = []
     for i in range(50):
         model = IPSOELM(max_epoch=20, n_particles=10)
         model.fit(X_train,y_train,X_val,y_val)
 
         preds = model.predict(X_test)
 
-        rmse = np.sqrt((1/len(preds))*np.sum((preds-y_test)**2))
-        rmses.append(rmse)
-        print(f'trial {i} RMSE = {rmse}')
-    print(np.mean(rmses))
-    print(np.std(rmses))
+        mse = np.sqrt((1/len(preds))*np.sum((preds-y_test)**2))
+        mses.append(mse)
+        print(f'trial {i} RMSE = {mse}')
+    print(np.mean(mses))
+    print(np.std(mses))
