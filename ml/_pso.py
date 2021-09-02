@@ -27,11 +27,11 @@ class PSO:
         # add inertia
         inertia = self._w * self._velocities
         # add cognitive component
-        r_1 = np.random.rand(*self.particles.shape)
+        r_1 = np.random.uniform(-1,1,size=self.particles.shape)
         cog = self._c1 * r_1 * (self._p_bests - self.particles)
         
         # add social component
-        r_2 = np.random.rand(*self.particles.shape)
+        r_2 = np.random.uniform(-1,1,size=self.particles.shape)
         #(self._N, *[1 for _ in range(len(self._g_best.shape))]) OLD
         g_best_stack_dim = (self._N, *[1]*len(self._g_best.shape))
 
