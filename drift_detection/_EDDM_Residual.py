@@ -1,10 +1,10 @@
 """
-DDM Wrapper for Regressors
+Early Drift Detection Method
 """
 from ._base_drift import BaseDrift
 import numpy as np
 
-class DDMResidual(BaseDrift):
+class EDDMResidual(BaseDrift):
     def __init__(self, base_regressor, warning_level=2.0, alarm_level=3.0,\
          min_n_errors=30, min_samples_train=100) -> None:
 
@@ -91,6 +91,7 @@ class DDMResidual(BaseDrift):
             self.min_mean_error = mean_error
         if errors_std <= self.min_std_error:
             self.min_std_error = errors_std
+        
         
         # Check to see if error occured on both tails (elif used instead of or for efficency)
         if error + errors_std > self.min_mean_error+(self.alarm_level*self.min_std_error):
