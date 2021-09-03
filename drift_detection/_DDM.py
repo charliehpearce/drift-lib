@@ -12,47 +12,28 @@ class DDM(BaseDrift):
         self.alarm_level = alarm_level
         self.min_n_errors = min_n_errors
         
-        self.residual_errors = []
         self.min_std = np.inf
         self.min_error = np.inf
         self.min_std_error = np.inf
-        self.N = 1
 
-        self.all_errs = []
+        # Used to track how many errors there are
+        self.n_errors = 1
+        
+        self.error_prob = 0
+        self.error_prob_std = 0
     
     def _add_error(self, error):
-        self.residual_errors.append(error)
-        
-        # Check to see if enough errors
-        if self.N > self.min_n_errors:
-            self._ddm(error)
-        
-        self.N += 1
+        pass
+
+    def add_element(self, p):
+        self._add_error(p)
 
     def _ddm(self, error):
-        # Calcualte new std
-        errors_std = np.std(self.residual_errors)
-        
-        # Get error from error residuals
-        error = self.residual_errors[-1]
-        self.all_errs.append(error)
-
-        # Update min std and error
-        if error+errors_std <= self.min_std_error:
-            self.min_std = errors_std
-            self.min_error = error
-            self.min_std_error = errors_std + error
-        
-        # Check to see if error occured
-        if error + errors_std > self.min_error+(self.alarm_level*self.min_std):
-            self._drift_alarm = True
-
-        elif error + errors_std > self.min_error+(self.warning_level*self.min_std):
-            self._drift_warning = True
+        pass
     
     def reset(self):
         self.min_std = np.inf
         self.min_error = np.inf
         self.min_std_error = np.inf
-        self.N = 1
+        self.n_errors = 1
         self.residual_errors = []
