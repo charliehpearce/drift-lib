@@ -9,7 +9,7 @@ class BaseDrift:
         self._drift_alarm = False
         self._drift_warning = False
         self.window = []
-        self.t_index = 0
+        self.n = 0
     
     @property
     def drift_alarm(self):
@@ -20,14 +20,15 @@ class BaseDrift:
         return self._drift_warning
 
     @abstractmethod
-    def apply(self):
+    def _apply(self):
         raise NotImplementedError
 
     def add_element(self, p):
+        self.reset_alarms()
+        self.n += 1
         self.window.append(p)
-        self.apply()
-        self.t_index += 1
-    
+        self._apply()
+        
     def reset_alarms(self):
         self._drift_warning = False
         self._drift_alarm = False

@@ -16,33 +16,28 @@ class DDM(BaseDrift):
         self.min_std = np.inf
         self.min_error = np.inf
         self.min_std_error = np.inf
-
-        # Used to track how many errors there are
-        self.n_errors = 0
         
         self.error_prob = 1
         self.error_std = 0
         self.error_prob_std = 0
 
+        # [DEBUG]
         self.errors = []
 
-    def add_element(self, p):
-        self.reset_alarms()
-        self.n_errors += 1
-        self.window.append(p)
-        
-        if self.n_errors > self.min_n_errors:
-            self._ddm()
-        
-
-    def _ddm(self):
+    def _apply(self):
+        if self.n < self.min_n_errors:
+            return False
         # Go over elements in window and compute probs
         for e in self.window:
-            self.error_prob += (e-self.error_prob)/self.n_errors
-            self.error_std = np.sqrt(self.error_prob*(1-self.error_prob)/self.n_errors)
+            self.error_prob += (e-self.error_prob)/self.n
+            self.error_std = np.sqrt(self.error_prob*(1-self.error_prob)/self.n)
+        
+        # [DEBUG]
         self.errors.append(self.error_prob)
+        
         # Clear window
         self.window = []
+        
         if (self.error_prob+self.error_std) < self.min_std_error:
             self.min_error = self.error_prob
             self.min_std = self.error_std
@@ -58,7 +53,7 @@ class DDM(BaseDrift):
         self.min_std = np.inf
         self.min_error = np.inf
         self.min_std_error = np.inf
-        self.n_errors = 0
+        self.n = 0
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt

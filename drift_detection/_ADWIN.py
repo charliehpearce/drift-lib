@@ -26,7 +26,7 @@ class ADWIN(BaseDrift):
         """
         return NotImplementedError
 
-    def apply(self):
+    def _apply(self):
         # Remove 0th element if bigger than max size
         if len(self.window) > self.maximum_window_size:
             self.window.pop(0)
@@ -55,6 +55,7 @@ class ADWIN(BaseDrift):
                 
                 if self.persist >= self.persistence_factor:
                     self.drift_alarm = True
+                    #Print drift location
                     print(self.t_index-(len(self.window)-i))
                     self.window = window_1
                     break
