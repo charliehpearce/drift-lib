@@ -2,7 +2,7 @@
 Drift Detection Method
 Gama et al.
 """
-from _base_drift import BaseDrift
+from ._base_drift import BaseDrift
 import numpy as np
 
 class DDM(BaseDrift):

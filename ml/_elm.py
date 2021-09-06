@@ -28,12 +28,15 @@ class ELM():
         return H
     
     def fit(self, X, y):
+        X,y = np.array(X),np.array(y)
+
         self.init_weights_biases(X_size=X.shape[1])
         
         mpinv = np.linalg.pinv(self._forward(X))
         self._output_weights = np.dot(mpinv, y)
 
     def predict(self, X):
+        X = np.array(X)
         out = self._forward(X)
         preds = np.dot(out, self._output_weights)
         return preds

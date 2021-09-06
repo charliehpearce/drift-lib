@@ -1,5 +1,7 @@
 """
-Drift Detection Method
+EWMA for Concept Drift Detection
+
+https://arxiv.org/abs/1212.6018
 """
 
 from _base_drift import BaseDrift

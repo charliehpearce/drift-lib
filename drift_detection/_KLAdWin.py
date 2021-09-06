@@ -5,11 +5,11 @@ from scipy.integrate import simpson
 from scipy.stats import gaussian_kde
 
 class KLAdWin(ADWIN):
-    def __init__(self, n_bins = 50, delta = 0.1) -> None:
+    def __init__(self, n_bins = 50, delta = 0.1, **kwargs) -> None:
         """
         n_bins for creating probabilty distibution functions
         """
-        super().__init__(delta=delta, minimum_window_size=300)
+        super().__init__(delta=delta, **kwargs)
         self.n_bins = n_bins
 
     def test_stat(self, window1, window2):

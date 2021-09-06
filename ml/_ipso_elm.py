@@ -2,8 +2,8 @@
 https://ieeexplore.ieee.org/document/1380068
 """
 import numpy as np
-from _pso import PSO
-from _elm import ELM
+from ._pso import PSO
+from ._elm import ELM
 from sklearn.model_selection import train_test_split
 
 class IPSOELM(PSO):

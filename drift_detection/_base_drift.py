@@ -1,7 +1,6 @@
 """
 Drift Super Class
 """
-
 from abc import abstractmethod
 
 class BaseDrift:

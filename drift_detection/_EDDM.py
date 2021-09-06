@@ -2,15 +2,16 @@
 Early Drift Detection Method
 Gama et al.
 """
-from _base_drift import BaseDrift
+from ._base_drift import BaseDrift
 import numpy as np
 
 class EDDM(BaseDrift):
-    def __init__(self, warning_level=0.9, alarm_level=0.8, min_n_errors = 100) -> None:
+    def __init__(self, warning_level=0.9, alarm_level=0.8, min_n_errors = 100, debug = True) -> None:
         super().__init__()
         self.warning_level = warning_level
         self.alarm_level = alarm_level
         self.min_n_errors = min_n_errors
+        self.debug = debug
         
         # Highest
         self.m2std_max = -np.inf
@@ -49,7 +50,8 @@ class EDDM(BaseDrift):
                 self.m2std = self.mean_d + (2*self.std_d)
         
         # [DEBUG]
-        self.errors.append(self.mean_d)
+        if self.debug:
+            self.errors.append(self.mean_d)
         
         # Clear window
         self.window = []
