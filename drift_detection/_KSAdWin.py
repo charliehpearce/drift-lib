@@ -12,11 +12,9 @@ class KSAdWin(ADWIN):
         """
         super().__init__(delta=delta, minimum_window_size=300)
         self.n_bins = n_bins
-        self.ks = []
     
     def test_stat(self, window1, window2):
         p = ks_2samp(window1,window2)[1]
-        self.ks.append(p)
         return p
 
 """

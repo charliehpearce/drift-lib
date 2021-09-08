@@ -49,7 +49,7 @@ class ADWIN(BaseDrift):
 
                 tstat = self.test_stat(window_0,window_1)
 
-                if tstat >= self.delta:
+                if tstat <= self.delta:
                     self._drift_warning = True
                     self.persist += 1
                 else:

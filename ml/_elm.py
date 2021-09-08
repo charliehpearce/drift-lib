@@ -4,7 +4,7 @@ https://ieeexplore.ieee.org/document/1380068
 import numpy as np
 
 class ELM():
-    def __init__(self, n_hidden_layers = 10000, input_weights = None, biases=None) -> None:
+    def __init__(self, n_hidden_layers = 5000, input_weights = None, biases=None) -> None:
         self.hidden_layers = n_hidden_layers
         self._input_weights = input_weights
         self._biases = biases

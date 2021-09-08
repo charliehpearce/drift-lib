@@ -25,7 +25,6 @@ class ResidualDriftHelper:
                 # Train
                 self.regressor.fit(self.feat_labs[0],self.feat_labs[1])
                 self.model_trained = True
-                print('new model trained')
                 # Clear window
                 self.feat_labs = [[],[]]
             else:
@@ -67,7 +66,6 @@ class PIDriftHelper:
                 # Train
                 self.regressor.fit(self.feat_labs[0],self.feat_labs[1])
                 self.model_trained = True
-                print('new model trained')
                 # Clear window
                 self.feat_labs = [[],[]]
             else:
