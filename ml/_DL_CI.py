@@ -1,8 +1,9 @@
 import torch as t 
 import numpy as np
 from torch import nn
-from torch.optim.adam import Adam
+from torch.optim import Adam as optim
 from torch.utils.data import TensorDataset, DataLoader
+import sys
 
 """
 To Do:
@@ -14,7 +15,7 @@ class QuantReg(nn.Module):
     """
     Define Model
     """
-    def __init__(self, input_size, hidden_size=70) -> None:
+    def __init__(self, input_size, hidden_size=32) -> None:
         super(QuantReg, self).__init__()
         
         # Define basic LSTM neural net
@@ -22,8 +23,6 @@ class QuantReg(nn.Module):
         #    batch_first = True)
         self.net = nn.Sequential(
         nn.Linear(input_size, hidden_size),
-        nn.ReLU(),
-        nn.Linear(hidden_size, hidden_size),
         nn.ReLU(),
         nn.Linear(hidden_size, hidden_size),
         nn.ReLU(),
@@ -39,8 +38,11 @@ class CIDLM:
     Helps with 
     """
 
-    def __init__(self, input_size, dl_model=QuantReg) -> None:
+    def __init__(self, input_size, dl_model=QuantReg, p_val = 0.2) -> None:
         self.dl_model = dl_model(input_size=input_size)
+        #debig
+        self.preds = []
+        self.p_val = p_val
     
     @staticmethod
     def _loss_fn(y_hat, y, p_val):
@@ -54,11 +56,12 @@ class CIDLM:
         """
         def get_error(y_hat_q, y, q):
             e = y - y_hat_q
-            return t.mean(t.max(q*e, e*(q-1)),dim=-1)
+            return t.mean(t.max(q*e, e*(q-1)))#dim=-1
 
         # Calculate quantiles from p_value
         quantile1 = p_val/2
         quantile2 = 1-(p_val/2)
+        #print(quantile1,quantile2)
 
         # calculate errors for both
         error1 = get_error(y_hat[:,0],y,quantile1)
@@ -66,10 +69,9 @@ class CIDLM:
         
         return (error1+error2)/2
     
-    def _train(self, train_loader, n_epoch=100, optim=Adam, learning_rate=0.001, p_val=0.05, verbose = True):
+    def _train(self, train_loader, n_epoch=1000, optim=optim, learning_rate=0.0001, verbose = False):
         
         optimizer = optim(self.dl_model.parameters(),learning_rate)
-        loss_fn = nn.MSELoss()
      
         for epoch in range(n_epoch):
             self.dl_model.train()
@@ -78,7 +80,7 @@ class CIDLM:
             for feats, labs in train_loader:
                 optimizer.zero_grad()
                 out = self.dl_model(feats)
-                l = self._loss_fn(out, labs,p_val)
+                l = self._loss_fn(out, labs, self.p_val)
                 losses.append(l)
                 l.backward()
                 optimizer.step()
@@ -95,7 +97,7 @@ class CIDLM:
         y_train = y.astype(np.float32)
 
         train_tensorset = TensorDataset(t.tensor(X_train),t.tensor(y_train))
-        train_dataset = DataLoader(train_tensorset, batch_size=100, shuffle=True)
+        train_dataset = DataLoader(train_tensorset, batch_size=50, shuffle=True)
 
         self._train(train_dataset, **kwargs)
 

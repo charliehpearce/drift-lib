@@ -28,6 +28,9 @@ class KLAdWin(ADWIN):
         Returns: Two PDFs from the window with the same format
         for KL distance calculations : list(s)
         """
+        # Catch DIV0 errors
+        epsilon = 0.00000001
+
         dist_1_kde = gaussian_kde(window1)
         dist_2_kde = gaussian_kde(window2)
 
@@ -38,8 +41,8 @@ class KLAdWin(ADWIN):
         x_eval = np.linspace(min_val, max_val, self.n_bins)
 
         # Create Prob Density Fns
-        dist_1_pdf = dist_1_kde.evaluate(x_eval)
-        dist_2_pdf = dist_2_kde.evaluate(x_eval)
+        dist_1_pdf = dist_1_kde.evaluate(x_eval)+epsilon
+        dist_2_pdf = dist_2_kde.evaluate(x_eval)+epsilon
 
         return dist_1_pdf, dist_2_pdf, x_eval
 

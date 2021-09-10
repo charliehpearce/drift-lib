@@ -35,7 +35,7 @@ class IPSOELM(PSO):
             train_test_split(X,y,test_size=0.3)
   
         # Range defines the initial search space
-        particles = np.random.uniform(-1,1,size=(self.n_particles, X_train.shape[1], \
+        particles = np.random.uniform(-1,1,size=(self.n_particles, len(self.X_train[0]), \
             self.n_hidden_layers))
 
         self.biases = np.random.uniform(-1,1,size=(self.n_hidden_layers))

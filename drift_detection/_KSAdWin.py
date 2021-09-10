@@ -6,12 +6,11 @@ from scipy.integrate import cumulative_trapezoid
 from scipy.stats import ks_2samp
 
 class KSAdWin(ADWIN):
-    def __init__(self, n_bins = 50, delta = 0.1) -> None:
+    def __init__(self, delta = 0.01) -> None:
         """
         n_bins for creating probabilty distibution functions
         """
         super().__init__(delta=delta, minimum_window_size=300)
-        self.n_bins = n_bins
     
     def test_stat(self, window1, window2):
         p = ks_2samp(window1,window2)[1]

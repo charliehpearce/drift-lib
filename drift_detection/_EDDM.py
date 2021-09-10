@@ -21,6 +21,8 @@ class EDDM(BaseDrift):
         self.last_e = 0
         self.std_temp = 0
         self.n_errors = 0
+        self.m2std = 0
+
 
         # [DEBUG]
         self.errors = []

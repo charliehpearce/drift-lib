@@ -1,3 +1,6 @@
+import numpy as np
+import sys
+
 class ResidualDriftHelper:
     def __init__(self, regressor, drift_detector, min_samples_train) -> None:
         self.regressor = regressor
@@ -47,6 +50,11 @@ class PIDriftHelper:
         
         self.feat_labs = [[],[]]
         self.model_trained = False
+        self.bound1 = []
+        self.bound2 = []
+
+    def get_preds(self):
+        return self.regressor.preds
 
     @property
     def drift_alarm(self):
@@ -64,7 +72,7 @@ class PIDriftHelper:
             # Train model if enough data
             if len(self.feat_labs[0]) >= self.min_samples_train:
                 # Train
-                self.regressor.fit(self.feat_labs[0],self.feat_labs[1])
+                self.regressor.fit(np.array(self.feat_labs[0]),np.array(self.feat_labs[1]))
                 self.model_trained = True
                 # Clear window
                 self.feat_labs = [[],[]]
@@ -73,8 +81,11 @@ class PIDriftHelper:
         
         # Model trained
         else:
-            upper_bound, lower_bound = self.regressor.predict(feat)
-            if upper_bound <= label <= lower_bound:
+            lower_bound, upper_bound = self.regressor.predict(feat)
+            self.bound1.append(lower_bound)
+            self.bound2.append(upper_bound)
+            
+            if lower_bound <= label <= upper_bound:
                 self.drift_detector.add_element(0)
             else:
                 self.drift_detector.add_element(1)
