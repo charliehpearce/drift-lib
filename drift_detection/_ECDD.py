@@ -27,7 +27,7 @@ class ECDD(BaseDrift):
     def _apply(self):
         self.m_sum += self.window[-1]
         self.m_p = self.m_sum / self.m_n
-        self.m_s = np.sqrt(self.m_p * (1.0 - self.m_p) * self.lda * (1.0 - np.power(1.0 - self.lambda_, 2.0 * self.m_n)) / (2.0 - self.lambda_))
+        self.m_s = np.sqrt(self.m_p * (1.0 - self.m_p) * self.lda * (1.0 - np.power(1.0 - self.lda, 2.0 * self.m_n)) / (2.0 - self.lda))
         self.m_n += 1
 
         self.z_t += self.lda * (self.window[-1] - self.z_t)

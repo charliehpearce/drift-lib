@@ -7,7 +7,7 @@ from abc import abstractmethod
 from ._base_drift import BaseDrift
 
 class ADWIN(BaseDrift):
-    def __init__(self, minimum_window_size=100, minimum_subwindow_size=75,\
+    def __init__(self, minimum_window_size=200, minimum_subwindow_size=75,\
          maximum_window_size = 2000, delta=20, persistence_factor=3, step_size = 50) -> None:
         
         super().__init__()

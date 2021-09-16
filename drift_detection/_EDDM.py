@@ -21,7 +21,7 @@ class EDDM(BaseDrift):
         self.last_e = 0
         self.std_temp = 0
         self.n_errors = 0
-        self.m2std = 0
+        self.m2std = 0.0000001
 
 
         # [DEBUG]
@@ -57,16 +57,19 @@ class EDDM(BaseDrift):
         
         # Clear window
         self.window = []
-        # Check p max and s max
-        if self.m2std > self.m2std_max:
-            self.m2std_max = self.m2std
+        try:
+            # Check p max and s max
+            if self.m2std > self.m2std_max:
+                self.m2std_max = self.m2std
 
-        if (self.m2std/self.m2std_max) < self.alarm_level:
-            self._drift_alarm = True
-            self.reset()
+            if (self.m2std/self.m2std_max) < self.alarm_level:
+                self._drift_alarm = True
+                self.reset()
 
-        elif (self.m2std/self.m2std_max) < self.alarm_level:
-            self._drift_warning = True
+            elif (self.m2std/self.m2std_max) < self.alarm_level:
+                self._drift_warning = True
+        except Exception as e:
+            print(e)
 
     def reset(self):
         self.m2std_max = -np.inf

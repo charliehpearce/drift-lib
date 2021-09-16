@@ -13,9 +13,10 @@ class ELM():
     def init_weights_biases(self, X_size):
         # Init weights and biases 
         if self._input_weights is None:
-            self._input_weights = np.random.uniform(-1,1,size=(X_size,self.hidden_layers))
+            self._input_weights = np.random.normal(loc=0,scale=np.sqrt(2/X_size),\
+                 size=(X_size,self.hidden_layers))
         if self._biases is None:
-            self._biases = np.random.uniform(-1,1,size=(self.hidden_layers))
+            self._biases = np.random.uniform(0,1,size=(self.hidden_layers))
 
     @staticmethod
     def _relu(x):
@@ -64,21 +65,24 @@ if __name__ == "__main__":
     hl_rmse = []
     n_trials = 50
 
+    pbar = tqdm(total=len(hidden_layers)+n_trials)
     for hl in hidden_layers:
         tik = time.time()
         rmses=[]
-        for i in tqdm(range(n_trials)):
+        for i in range(n_trials):
             model = ELM(n_hidden_layers=hl)
             model.fit(X_train,y_train)
 
             preds = model.predict(X_test)
             rmse = np.sqrt(mean_squared_error(y_test,preds))
             rmses.append(rmse)
+            pbar.update()
             
         tok = time.time()
         hl_rmse.append(np.mean(rmses))
         time_taken.append((tok-tik)/n_trials)
-        print(f'hidden layers : {hl} RMSE,time: {hl_rmse[-1],time_taken[-1]}')
-
+        pbar.set_description(f'hidden layers : {hl} RMSE,time: {hl_rmse[-1],time_taken[-1]}')
+    
+    pbar.close()
     print(hl_rmse)
     print(time_taken)

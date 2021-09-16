@@ -6,6 +6,7 @@ from ._KSAdWin import KSAdWin
 from ._DDM import DDM
 from ._DDM_Residual import DDMResidual
 from ._EDDM import EDDM
-from ._ECDD import EWMA
+from ._ECDD import ECDD
+from ._ECDD_residual import ECDDResidual
 
-__all__ = ['KLAdWin','TTestAdWin','KSAdWin','DDM','DDMResidual','EDDM','EDDMResidual','EWMA']
+__all__ = ['KLAdWin','TTestAdWin','KSAdWin','DDM','DDMResidual','EDDM','EDDMResidual','EWMA','ECDD','ECDDResidual']

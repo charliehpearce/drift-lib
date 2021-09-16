@@ -2,12 +2,12 @@
 https://ieeexplore.ieee.org/document/1380068
 """
 import numpy as np
-from ._pso import PSO
-from ._elm import ELM
+from _pso import PSO
+from _elm import ELM
 from sklearn.model_selection import train_test_split
 
 class IPSOELM(PSO):
-    def __init__(self, max_epoch=5, n_hidden_layers=5000, n_particles = 10) -> None:
+    def __init__(self, max_epoch=50, n_hidden_layers=5000, n_particles = 10) -> None:
         super().__init__(max_epoch=max_epoch, verbose=False)
         self.n_hidden_layers = n_hidden_layers
         self.n_particles = n_particles
@@ -19,7 +19,7 @@ class IPSOELM(PSO):
         for p in particles:
             # Get weights and biases from particle mtrx
             # Train ELM on weights and biases
-            mdl = ELM(input_weights=p, biases=self.biases, )
+            mdl = ELM(input_weights=p, biases=self.biases)
             mdl.fit(X=self.X_train,y=self.y_train) 
             # Get predictions
             preds = mdl.predict(self.X_val)
@@ -35,10 +35,10 @@ class IPSOELM(PSO):
             train_test_split(X,y,test_size=0.3)
   
         # Range defines the initial search space
-        particles = np.random.uniform(-1,1,size=(self.n_particles, len(self.X_train[0]), \
+        particles = np.random.normal(loc=0,scale=np.sqrt(2/len(self.X_train[0])), size=(self.n_particles, len(self.X_train[0]), \
             self.n_hidden_layers))
 
-        self.biases = np.random.uniform(-1,1,size=(self.n_hidden_layers))
+        self.biases = np.random.uniform(0, 1, size=(self.n_hidden_layers))
 
         # Get model without any PSO
         ctrl = ELM(input_weights=particles[0],biases=self.biases)
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     from sklearn.preprocessing import MinMaxScaler
     from tqdm import tqdm
 
-    np.random.seed(123)
+    #np.random.seed(123)
 
     scaler = MinMaxScaler()
     X, y = data(return_X_y = True)
@@ -76,8 +76,9 @@ if __name__ == "__main__":
 
     mses = []
     ctrl_mse = []
-    for i in range(2):
-        model = IPSOELM(max_epoch=50, n_particles=10, n_hidden_layers=100)
+    pbar = tqdm(total=50)
+    for i in range(50):
+        model = IPSOELM(max_epoch=20, n_particles=10, n_hidden_layers=100)
         model.fit(X_train,y_train)
 
         preds = model.predict(X_test)
@@ -85,8 +86,10 @@ if __name__ == "__main__":
         mse = np.sqrt((1/len(preds))*np.sum((preds-y_test)**2))
         mses.append(mse)
         ctrl_mse.append(model.control_rmse)
-        print(f'trial {i} RMSE = {mse}')
+        pbar.set_description(f'trial {i} RMSE = {mse}')
+        pbar.update()
     
+    pbar.close()
     print(np.mean(mses))
     print(np.mean(ctrl_mse))
     print(np.std(mses))
