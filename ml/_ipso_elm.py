@@ -24,7 +24,7 @@ class IPSOELM(PSO):
             # Get predictions
             preds = mdl.predict(self.X_val)
             # Get RMSE and add to rmse_particles list
-            mse = (1/len(preds))*np.sum((preds-self.y_val)**2)
+            mse = np.sqrt(1/len(preds))*np.sum((preds-self.y_val)**2)
 
             mse_particles.append(mse)
         
@@ -40,8 +40,11 @@ class IPSOELM(PSO):
 
         self.biases = np.random.uniform(0, 1, size=(self.n_hidden_layers))
 
+        # Get random particle from swarm
+        rand_idx = np.random.randint(low=0,high=self.n_particles)
+        
         # Get model without any PSO
-        ctrl = ELM(input_weights=particles[0],biases=self.biases)
+        ctrl = ELM(input_weights=particles[rand_idx],biases=self.biases)
         ctrl.fit(self.X_train, self.y_train)
         ctrl_preds = ctrl.predict(X=self.X_val)
         self.control_rmse = np.sqrt((1/len(ctrl_preds))*np.sum((ctrl_preds-self.y_val)**2))
@@ -67,8 +70,6 @@ if __name__ == "__main__":
     from sklearn.preprocessing import MinMaxScaler
     from tqdm import tqdm
 
-    #np.random.seed(123)
-
     scaler = MinMaxScaler()
     X, y = data(return_X_y = True)
     X_scaled = scaler.fit_transform(X)
@@ -76,9 +77,11 @@ if __name__ == "__main__":
 
     mses = []
     ctrl_mse = []
-    pbar = tqdm(total=50)
-    for i in range(50):
-        model = IPSOELM(max_epoch=20, n_particles=10, n_hidden_layers=100)
+    max_epoch = 100
+    pbar = tqdm(total=max_epoch)
+    
+    for i in range(100):
+        model = IPSOELM(max_epoch=max_epoch, n_particles=10, n_hidden_layers=25)
         model.fit(X_train,y_train)
 
         preds = model.predict(X_test)
@@ -90,6 +93,5 @@ if __name__ == "__main__":
         pbar.update()
     
     pbar.close()
-    print(np.mean(mses))
-    print(np.mean(ctrl_mse))
+    print(f'Mean PSO:{np.mean(mses)}, MEAN ELM:{np.mean(ctrl_mse)}')
     print(np.std(mses))
